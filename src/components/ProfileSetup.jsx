@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import BlockStack from './BlockStack'
+import LogoMark from './LogoMark'
 import { SKILL_LEVELS, SKILL_DIRECTIONS } from '../lib/skills'
 
 const TAG_TYPES = [
@@ -87,7 +88,13 @@ export default function ProfileSetup({ onComplete, onCancel, initialData = null,
   return (
     <div className="max-w-lg mx-auto px-6 py-14">
       {mode === 'create' && (
-        <p className="font-mono text-xs text-marigold tracking-widest uppercase mb-3">Step 1</p>
+        <>
+          <div className="flex items-center gap-2 mb-6">
+            <LogoMark size={22} />
+            <span className="font-display text-base font-semibold text-offwhite">Tapestry</span>
+          </div>
+          <p className="font-mono text-xs text-marigold tracking-widest uppercase mb-3">Step 1</p>
+        </>
       )}
       <h1 className="font-display text-3xl font-semibold text-offwhite mb-2">
         {mode === 'edit' ? 'Edit your block signature' : 'Build your block signature'}

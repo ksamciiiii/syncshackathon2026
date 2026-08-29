@@ -6,6 +6,7 @@ import TeachLearnBoard from './components/TeachLearnBoard'
 import Contacts from './components/Contacts'
 import ConnectModal from './components/ConnectModal'
 import BlockStack from './components/BlockStack'
+import LogoMark from './components/LogoMark'
 import { fetchMyProfile, createProfile, updateProfile, sendConnectionRequest } from './lib/db'
 
 const TABS = [
@@ -62,6 +63,7 @@ export default function App() {
       <header className="border-b border-surface2 sticky top-0 bg-canvas/90 backdrop-blur z-10">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <LogoMark size={26} />
             <span className="font-display text-lg font-semibold text-offwhite">Tapestry</span>
             <BlockStack tags={currentUser.tags} size="sm" />
           </div>

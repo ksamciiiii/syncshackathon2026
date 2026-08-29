@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import ProfileSetup from './components/ProfileSetup'
+import ProfileView from './components/ProfileView'
 import MatchFeed from './components/MatchFeed'
 import TeachLearnBoard from './components/TeachLearnBoard'
 import ConnectModal from './components/ConnectModal'
@@ -8,6 +9,7 @@ import BlockStack from './components/BlockStack'
 const TABS = [
   { key: 'matches', label: 'Matches' },
   { key: 'teach-learn', label: 'Teach & Learn' },
+  { key: 'profile', label: 'Profile' },
 ]
 
 export default function App() {
@@ -46,10 +48,17 @@ export default function App() {
 
       <main className="max-w-3xl mx-auto px-6 py-8">
         {tab === 'matches' && (
-          <MatchFeed currentUser={currentUser} onConnect={setConnectingWith} />
+          <MatchFeed
+            currentUser={currentUser}
+            onConnect={setConnectingWith}
+            onEditProfile={() => setTab('profile')}
+          />
         )}
         {tab === 'teach-learn' && (
           <TeachLearnBoard currentUser={currentUser} onConnect={setConnectingWith} />
+        )}
+        {tab === 'profile' && (
+          <ProfileView currentUser={currentUser} onUpdate={setCurrentUser} />
         )}
       </main>
 

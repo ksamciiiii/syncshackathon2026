@@ -16,8 +16,11 @@ export const CURRENT_USER = {
     { label: 'Tagalog', type: 'language' },
     { label: 'Board games', type: 'hobby' },
   ],
-  offering: 'Can teach: basic Tagalog phrases, adobo recipes',
-  seeking: 'Want to learn: guitar basics',
+  skills: [
+    { label: 'Basic Tagalog phrases', direction: 'teach', level: 'intermediate' },
+    { label: 'Adobo recipes', direction: 'teach', level: 'advanced' },
+    { label: 'Guitar basics', direction: 'learn', level: 'beginner' },
+  ],
 }
 
 export const USERS = [
@@ -30,8 +33,11 @@ export const USERS = [
       { label: 'Tagalog', type: 'language' },
       { label: 'Guitar', type: 'hobby' },
     ],
-    offering: 'Can teach: guitar basics, karaoke playlist curation',
-    seeking: 'Want to learn: cooking adobo properly',
+    skills: [
+      { label: 'Guitar basics', direction: 'teach', level: 'intermediate' },
+      { label: 'Karaoke playlist curation', direction: 'teach', level: 'advanced' },
+      { label: 'Cooking adobo properly', direction: 'learn', level: 'beginner' },
+    ],
   },
   {
     id: 'u2',
@@ -42,8 +48,11 @@ export const USERS = [
       { label: 'Vietnamese', type: 'culture' },
       { label: 'Vietnamese (lang)', type: 'language' },
     ],
-    offering: 'Can teach: strategy board games, pho broth basics',
-    seeking: 'Want to learn: conversational Tagalog',
+    skills: [
+      { label: 'Strategy board games', direction: 'teach', level: 'advanced' },
+      { label: 'Pho broth basics', direction: 'teach', level: 'intermediate' },
+      { label: 'Conversational Tagalog', direction: 'learn', level: 'beginner' },
+    ],
   },
   {
     id: 'u3',
@@ -54,8 +63,11 @@ export const USERS = [
       { label: 'Home cooking', type: 'hobby' },
       { label: 'Korean', type: 'culture' },
     ],
-    offering: 'Can teach: hand-building ceramics',
-    seeking: 'Want to learn: home cooking basics, company while eating',
+    skills: [
+      { label: 'Hand-building ceramics', direction: 'teach', level: 'advanced' },
+      { label: 'Home cooking basics', direction: 'learn', level: 'beginner' },
+      { label: 'Company while eating', direction: 'learn', level: 'beginner' },
+    ],
   },
   {
     id: 'u4',
@@ -66,8 +78,11 @@ export const USERS = [
       { label: 'Chess', type: 'hobby' },
       { label: 'Greek', type: 'culture' },
     ],
-    offering: 'Can teach: chess openings',
-    seeking: 'Want to learn: board game strategy, new friends nearby',
+    skills: [
+      { label: 'Chess openings', direction: 'teach', level: 'intermediate' },
+      { label: 'Board game strategy', direction: 'learn', level: 'beginner' },
+      { label: 'New friends nearby', direction: 'learn', level: 'beginner' },
+    ],
   },
   {
     id: 'u5',
@@ -78,8 +93,10 @@ export const USERS = [
       { label: 'Home cooking', type: 'hobby' },
       { label: 'Photography', type: 'hobby' },
     ],
-    offering: 'Can teach: portrait photography basics',
-    seeking: 'Want to learn: Filipino desserts',
+    skills: [
+      { label: 'Portrait photography basics', direction: 'teach', level: 'intermediate' },
+      { label: 'Filipino desserts', direction: 'learn', level: 'beginner' },
+    ],
   },
 ]
 

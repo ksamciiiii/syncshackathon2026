@@ -2,7 +2,7 @@ import { USERS } from '../data/mockData'
 import { rankMatches } from '../lib/matching'
 import BlockStack from './BlockStack'
 
-export default function MatchFeed({ currentUser, onConnect }) {
+export default function MatchFeed({ currentUser, onConnect, onEditProfile }) {
   const matches = rankMatches(currentUser, USERS)
 
   return (
@@ -15,9 +15,19 @@ export default function MatchFeed({ currentUser, onConnect }) {
       </div>
 
       {matches.length === 0 && (
-        <p className="text-muted italic py-8 text-center">
-          No matches yet — add more tags to your profile to find people.
-        </p>
+        <div className="text-center py-8">
+          <p className="text-muted italic mb-4">
+            No matches yet — add more tags to your profile to find people.
+          </p>
+          {onEditProfile && (
+            <button
+              onClick={onEditProfile}
+              className="px-4 py-2 rounded-lg bg-marigold text-ink text-sm font-semibold hover:brightness-105"
+            >
+              Add tags to your profile →
+            </button>
+          )}
+        </div>
       )}
 
       <div className="grid gap-3">

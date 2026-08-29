@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { USERS, NEED_POSTS } from '../data/mockData'
+import { formatSkills } from '../lib/skills'
 
 export default function TeachLearnBoard({ currentUser, onConnect }) {
   const [needText, setNeedText] = useState('')
@@ -25,13 +26,15 @@ export default function TeachLearnBoard({ currentUser, onConnect }) {
       </div>
 
       <div className="grid gap-3">
-        {USERS.map((u) => (
+        {USERS.map((u) => {
+          const { offering, seeking } = formatSkills(u.skills)
+          return (
           <div key={u.id} className="bg-surface border border-surface2 rounded-xl p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <span className="font-display font-semibold text-offwhite">{u.username}</span>
-                <p className="text-sm text-marigold mt-1">{u.offering}</p>
-                <p className="text-sm text-coral mt-1">{u.seeking}</p>
+                {offering && <p className="text-sm text-marigold mt-1">{offering}</p>}
+                {seeking && <p className="text-sm text-coral mt-1">{seeking}</p>}
               </div>
               <button
                 onClick={() => onConnect(u)}
@@ -41,7 +44,8 @@ export default function TeachLearnBoard({ currentUser, onConnect }) {
               </button>
             </div>
           </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="pt-4 border-t border-surface2">

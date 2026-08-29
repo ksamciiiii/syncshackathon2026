@@ -5,6 +5,8 @@ export default function ConnectModal({ user, onClose, onSaveNickname }) {
   const [nickname, setNickname] = useState('')
   const [messages, setMessages] = useState([])
   const [draft, setDraft] = useState('')
+  const [showMeetupForm, setShowMeetupForm] = useState(false)
+  const [meetup, setMeetup] = useState({ place: '', date: '', time: '' })
 
   function sendRequest() {
     setStage('sent')
@@ -20,6 +22,21 @@ export default function ConnectModal({ user, onClose, onSaveNickname }) {
 
   function saveNickname() {
     if (nickname.trim()) onSaveNickname(user.id, nickname.trim())
+  }
+
+  function sendMeetupSuggestion(e) {
+    e.preventDefault()
+    if (!meetup.place.trim() || !meetup.date || !meetup.time) return
+    setMessages([
+      ...messages,
+      {
+        from: 'me',
+        text: `📍 Suggested meetup: ${meetup.place.trim()} on ${meetup.date} at ${meetup.time}`,
+        isMeetup: true,
+      },
+    ])
+    setMeetup({ place: '', date: '', time: '' })
+    setShowMeetupForm(false)
   }
 
   return (
@@ -76,7 +93,12 @@ export default function ConnectModal({ user, onClose, onSaveNickname }) {
                 <p className="text-muted text-sm italic">Say hi — connection accepted!</p>
               )}
               {messages.map((m, i) => (
-                <div key={i} className="bg-marigold/10 text-offwhite text-sm rounded-lg px-3 py-1.5 w-fit ml-auto">
+                <div
+                  key={i}
+                  className={`text-sm rounded-lg px-3 py-1.5 w-fit ml-auto ${
+                    m.isMeetup ? 'bg-coral/20 text-coral font-medium' : 'bg-marigold/10 text-offwhite'
+                  }`}
+                >
                   {m.text}
                 </div>
               ))}
@@ -94,9 +116,53 @@ export default function ConnectModal({ user, onClose, onSaveNickname }) {
               </button>
             </form>
 
-            <button className="w-full py-2 rounded-lg bg-coral/10 text-coral text-sm font-medium hover:bg-coral/20">
-              Suggest a meetup →
-            </button>
+            {!showMeetupForm ? (
+              <button
+                type="button"
+                onClick={() => setShowMeetupForm(true)}
+                className="w-full py-2 rounded-lg bg-coral/10 text-coral text-sm font-medium hover:bg-coral/20"
+              >
+                Suggest a meetup →
+              </button>
+            ) : (
+              <form onSubmit={sendMeetupSuggestion} className="space-y-2 bg-ink rounded-lg p-3">
+                <input
+                  value={meetup.place}
+                  onChange={(e) => setMeetup({ ...meetup, place: e.target.value })}
+                  placeholder="Where? e.g. Marrickville Library"
+                  className="w-full bg-surface border border-surface2 rounded-lg px-3 py-2 text-sm text-offwhite placeholder:text-muted focus:border-coral outline-none"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={meetup.date}
+                    onChange={(e) => setMeetup({ ...meetup, date: e.target.value })}
+                    className="flex-1 bg-surface border border-surface2 rounded-lg px-3 py-2 text-sm text-offwhite focus:border-coral outline-none"
+                  />
+                  <input
+                    type="time"
+                    value={meetup.time}
+                    onChange={(e) => setMeetup({ ...meetup, time: e.target.value })}
+                    className="flex-1 bg-surface border border-surface2 rounded-lg px-3 py-2 text-sm text-offwhite focus:border-coral outline-none"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowMeetupForm(false)}
+                    className="flex-1 py-2 rounded-lg bg-surface2 text-offwhite text-sm font-medium hover:bg-surface2/70"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-2 rounded-lg bg-coral text-ink text-sm font-semibold hover:brightness-105"
+                  >
+                    Send suggestion
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         )}
       </div>

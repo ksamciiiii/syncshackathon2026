@@ -28,7 +28,11 @@ export function scoreMatch(currentUser, candidate) {
     }
   }
 
-  if (currentUser.neighborhood === candidate.neighborhood) {
+  if (
+    currentUser.neighborhood &&
+    candidate.neighborhood &&
+    currentUser.neighborhood.trim().toLowerCase() === candidate.neighborhood.trim().toLowerCase()
+  ) {
     score += WEIGHTS.neighborhood
     reasons.push({ label: candidate.neighborhood, type: 'neighborhood', weight: WEIGHTS.neighborhood })
   }

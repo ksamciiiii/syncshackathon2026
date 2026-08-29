@@ -4,11 +4,12 @@ import { TAG_COLORS } from '../data/mockData'
 // "signature." Highlighted tags (matched ones) get a glow + label.
 export default function BlockStack({ tags, highlightedLabels = [], size = 'md' }) {
   const dims = size === 'sm' ? 'w-5 h-5' : 'w-7 h-7'
+  const normalizedHighlights = highlightedLabels.map((l) => l.toLowerCase())
 
   return (
     <div className="flex flex-wrap gap-1.5" role="img" aria-label={`Tags: ${tags.map((t) => t.label).join(', ')}`}>
       {tags.map((tag, i) => {
-        const isHighlighted = highlightedLabels.includes(tag.label)
+        const isHighlighted = normalizedHighlights.includes(tag.label.toLowerCase())
         return (
           <div
             key={i}

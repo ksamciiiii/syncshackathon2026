@@ -1,0 +1,55 @@
+import { USERS } from '../data/mockData'
+import { rankMatches } from '../lib/matching'
+import BlockStack from './BlockStack'
+
+export default function MatchFeed({ currentUser, onConnect }) {
+  const matches = rankMatches(currentUser, USERS)
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="font-display text-2xl font-semibold text-offwhite">Your matches</h2>
+        <p className="text-muted text-sm mt-1">
+          Ranked by shared blocks — language counts most, then culture and hobbies, then neighborhood.
+        </p>
+      </div>
+
+      {matches.length === 0 && (
+        <p className="text-muted italic py-8 text-center">
+          No matches yet — add more tags to your profile to find people.
+        </p>
+      )}
+
+      <div className="grid gap-3">
+        {matches.map(({ candidate, score, reasons }) => (
+          <div
+            key={candidate.id}
+            className="bg-surface border border-surface2 rounded-xl p-5 hover:border-marigold/50 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="font-display font-semibold text-offwhite">{candidate.username}</span>
+                  <span className="font-mono text-xs text-marigold bg-marigold/10 px-2 py-0.5 rounded">
+                    match score {score}
+                  </span>
+                </div>
+                <p className="text-sm text-muted mb-3">{candidate.neighborhood}</p>
+                <BlockStack tags={candidate.tags} highlightedLabels={reasons.map((r) => r.label)} />
+                <p className="text-xs font-mono text-muted mt-3">
+                  Matched on: {reasons.map((r) => r.label).join(', ')}
+                </p>
+              </div>
+              <button
+                onClick={() => onConnect(candidate)}
+                className="shrink-0 px-4 py-2 rounded-lg bg-marigold text-ink text-sm font-semibold hover:brightness-105"
+              >
+                Connect
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

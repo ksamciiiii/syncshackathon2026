@@ -1,36 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tapestry — weave yourself in</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-
-<div class="app-shell">
-  <div class="topbar">
-    <div class="brand">
-      <div class="brand-mark">T</div>
-      <div class="brand-name">Tapestry</div>
-    </div>
-    <div id="meChipWrap"></div>
-  </div>
-  <div class="stitch">
-    <svg viewBox="0 0 400 14" preserveAspectRatio="none"><polyline points="0,7 10,2 20,12 30,2 40,12 50,2 60,12 70,2 80,12 90,2 100,12 110,2 120,12 130,2 140,12 150,2 160,12 170,2 180,12 190,2 200,12 210,2 220,12 230,2 240,12 250,2 260,12 270,2 280,12 290,2 300,12 310,2 320,12 330,2 340,12 350,2 360,12 370,2 380,12 390,2 400,7" fill="none" stroke="#DCD3BE" stroke-width="1.6"/></svg>
-  </div>
-
-  <div id="app"></div>
-</div>
-
-<div id="toast"></div>
-
-<!-- Load order matters: data → matching (uses data) → ui (uses data + matching) → app (kicks off render) -->
-<script src="js/data.js"></script>
-<script src="js/matching.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blocks — find your people</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-ink">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

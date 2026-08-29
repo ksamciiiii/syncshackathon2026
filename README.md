@@ -1,50 +1,65 @@
-# Tapestry
+# Blocks
 
-A hobby, culture, and language community app — with a recommendation algorithm and a reverse-loneliness matching feature. Not a dating app: no swiping, no looks-based matching.
+Connect, chat, and meet up with people who share your interests, culture, and
+language — and trade informal teaching/learning with each other. Anonymous
+by default: usernames only, with private nicknames for people you connect with.
 
-## Project structure
+Built for SYNCS HACK 2026 — theme: "blocks that make up the world."
+Every person's interests, culture, and language render as literal stacked
+color blocks: their "signature."
 
+## Run it
+
+```bash
+npm install
+npm run dev
 ```
-tapestry/
-├── index.html          # page shell + load order for scripts
-├── css/
-│   └── style.css        # all styling (design tokens as CSS variables at the top)
-└── js/
-    ├── data.js           # constants (tag lists, locations), seed data, storage helpers
-    ├── matching.js        # the recommendation scoring function + "why matched" reasons
-    ├── ui.js               # all screen rendering (onboarding, discover, groups, events, messages, profile)
-    └── app.js               # router entry point, kicks off the first render
+
+Opens at `http://localhost:5173`. Currently runs on mock data (`src/data/mockData.js`)
+so the whole flow — profile setup, matching, teach/learn, connect + chat — works
+standalone with zero backend setup. Good for your demo right now.
+
+## What's built (demo-ready)
+
+- **Profile setup** — anonymous username, rough neighborhood, tags (hobby / culture / language)
+- **Match feed** — weighted-tag scoring (`src/lib/matching.js`), shows *why* each match scored
+  what it did — language weighted highest, then culture/hobby, then neighborhood
+- **Teach & Learn board** — see what others can teach / want to learn; post a "need"
+  (the reverse-loneliness feature — matched on a specific stated need, not just interests)
+- **Connect flow** — send request → simulated accept → private nickname → placeholder chat →
+  "suggest a meetup" button
+
+## Wiring the real backend (post-hackathon / if you have time left)
+
+1. Create a free project at supabase.com
+2. Run `supabase/schema.sql` in the SQL editor
+3. `npm install @supabase/supabase-js` (already in package.json)
+4. Create `src/lib/supabaseClient.js`:
+   ```js
+   import { createClient } from '@supabase/supabase-js'
+   export const supabase = createClient(YOUR_URL, YOUR_ANON_KEY)
+   ```
+5. Swap the mock data imports in `MatchFeed.jsx` / `TeachLearnBoard.jsx` for
+   Supabase queries against `profiles`, `tags`, `need_posts`.
+6. Use Supabase Realtime on the `messages` table for live chat instead of the
+   in-memory placeholder in `ConnectModal.jsx`.
+
+## Deploy
+
+```bash
+npm run build
 ```
+Push to GitHub, import into Vercel, done — or `npx vercel` directly.
 
-`data.js`, `matching.js`, and `ui.js` all attach plain functions to the global scope (no bundler, no build step) — `index.html` loads them in the order that matters: data → matching → ui → app.
+## Demo script (suggested, ~90 sec)
 
-## How to run it
-
-**Locally, instantly:** just double-click `index.html` — it opens in any browser, no server or install needed.
-
-**To get a live URL to demo from:** drag the whole `tapestry` folder onto [netlify.com/drop](https://app.netlify.com/drop) — you'll get a public link in seconds.
-
-## How the matching works (for judges / your pitch)
-
-`js/matching.js` computes a fully explainable score for every other profile:
-
-- +3 per shared hobby
-- +4 per shared culture or language
-- +6 if the other person already does something you want to learn (teach/learn match)
-- +10 per overlap between what you're missing/need and what they can help with (the reverse-loneliness match)
-- minus a small distance penalty (capped, so far-away doesn't zero out a strong match)
-
-The top reverse-loneliness match is pulled out and shown as a dedicated hero card on Discover, separate from the ranked list. Every card also prints the literal reasons behind its score — nothing is a black box.
-
-## Data & privacy notes
-
-This demo uses browser `localStorage`, not a real backend — data lives only in the browser you're using and won't sync across devices. That's intentional for a hackathon demo (it's pre-seeded so it looks alive immediately); a production version would move this to a real database with actual account security.
-
-Location is deliberately neighborhood-level only, never an exact pin. Report and block are available from any profile, message, or event card.
-
-## Roadmap (not built in this demo)
-
-- Real accounts / backend (e.g. Supabase or similar)
-- Group chat and live messaging
-- Actual content moderation pipeline
-- Native mobile apps
+1. Show profile setup — point out anonymity + rough location only (safety)
+2. Land on Match Feed — click a match, point at the **highlighted blocks** and
+   "Matched on: ..." line — this is your explainable-algorithm moment
+3. Switch to Teach & Learn — show a "can teach / want to learn" pair, then
+   scroll to a need post ("I miss cooking with my mom") — this is your
+   reverse-loneliness differentiator, say it out loud
+4. Click Connect → nickname → chat → "Suggest a meetup" — ties back to the
+   full loop: connect, chat, meet up in real life
+5. Close with the roadmap line: real-time chat + safety/reporting layer via
+   Supabase, schema already written (`supabase/schema.sql`)

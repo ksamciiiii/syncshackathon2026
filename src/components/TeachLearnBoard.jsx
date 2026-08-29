@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchOtherProfiles, fetchNeedPosts, postNeed as postNeedToDb } from '../lib/db'
-import { formatSkills } from '../lib/skills'
+import { formatSkills, findSkillMatch } from '../lib/skills'
 
 export default function TeachLearnBoard({ currentUser, onConnect }) {
   const [needText, setNeedText] = useState('')
@@ -31,6 +31,10 @@ export default function TeachLearnBoard({ currentUser, onConnect }) {
     }
   }
 
+  const matchedProfiles = profiles
+    .map((profile) => ({ profile, ...findSkillMatch(currentUser, profile) }))
+    .filter((m) => m.isMatch)
+
   return (
     <div className="space-y-8">
       <div>
@@ -43,10 +47,15 @@ export default function TeachLearnBoard({ currentUser, onConnect }) {
       {error && <p className="text-coral text-sm">{error}</p>}
       {loading && <p className="text-muted italic py-8 text-center">Loading...</p>}
 
+      {!loading && matchedProfiles.length === 0 && (
+        <p className="text-muted italic py-8 text-center">
+          No skill matches yet — add what you can teach or want to learn on your Profile to find trades.
+        </p>
+      )}
+
       <div className="grid gap-3">
-        {profiles.map((u) => {
+        {matchedProfiles.map(({ profile: u, theyCanTeachMe, iCanTeachThem }) => {
           const { offering, seeking } = formatSkills(u.skills)
-          if (!offering && !seeking) return null
           return (
             <div key={u.id} className="bg-surface border border-surface2 rounded-xl p-5">
               <div className="flex items-start justify-between gap-4">
@@ -54,6 +63,13 @@ export default function TeachLearnBoard({ currentUser, onConnect }) {
                   <span className="font-display font-semibold text-offwhite">{u.username}</span>
                   {offering && <p className="text-sm text-marigold mt-1">{offering}</p>}
                   {seeking && <p className="text-sm text-coral mt-1">{seeking}</p>}
+                  <p className="text-xs font-mono text-muted mt-2">
+                    {theyCanTeachMe.length > 0 &&
+                      `They could teach you: ${theyCanTeachMe.map((s) => s.label).join(', ')}`}
+                    {theyCanTeachMe.length > 0 && iCanTeachThem.length > 0 && ' · '}
+                    {iCanTeachThem.length > 0 &&
+                      `You could teach them: ${iCanTeachThem.map((s) => s.label).join(', ')}`}
+                  </p>
                 </div>
                 <button
                   onClick={() => onConnect(u)}

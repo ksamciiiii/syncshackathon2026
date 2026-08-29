@@ -7,6 +7,7 @@ export default function MatchFeed({ currentUser, onConnect, onEditProfile }) {
   const [profiles, setProfiles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
     fetchOtherProfiles(currentUser.id)
@@ -17,6 +18,16 @@ export default function MatchFeed({ currentUser, onConnect, onEditProfile }) {
 
   const matches = rankMatches(currentUser, profiles)
 
+  const trimmedQuery = query.trim().toLowerCase()
+  const isSearching = trimmedQuery.length > 0
+  const searchResults = isSearching
+    ? profiles.filter(
+        (p) =>
+          p.username.toLowerCase().includes(trimmedQuery) ||
+          (p.tags ?? []).some((t) => t.label.toLowerCase().includes(trimmedQuery))
+      )
+    : []
+
   return (
     <div className="space-y-4">
       <div>
@@ -26,10 +37,21 @@ export default function MatchFeed({ currentUser, onConnect, onEditProfile }) {
         </p>
       </div>
 
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search by username or tag..."
+        className="w-full bg-surface border border-surface2 rounded-lg px-4 py-2.5 text-offwhite placeholder:text-muted focus:border-marigold outline-none"
+      />
+
       {error && <p className="text-coral text-sm">{error}</p>}
       {loading && <p className="text-muted italic py-8 text-center">Loading matches...</p>}
 
-      {!loading && matches.length === 0 && (
+      {!loading && isSearching && searchResults.length === 0 && (
+        <p className="text-muted italic py-8 text-center">No one matches "{query.trim()}".</p>
+      )}
+
+      {!loading && !isSearching && matches.length === 0 && (
         <div className="text-center py-8">
           <p className="text-muted italic mb-4">
             No matches yet — add more tags to your profile to find people.
@@ -45,36 +67,61 @@ export default function MatchFeed({ currentUser, onConnect, onEditProfile }) {
         </div>
       )}
 
-      <div className="grid gap-3">
-        {matches.map(({ candidate, score, reasons }) => (
-          <div
-            key={candidate.id}
-            className="bg-surface border border-surface2 rounded-xl p-5 hover:border-marigold/50 transition-colors"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
+      {isSearching ? (
+        <div className="grid gap-3">
+          {searchResults.map((candidate) => (
+            <div
+              key={candidate.id}
+              className="bg-surface border border-surface2 rounded-xl p-5 hover:border-marigold/50 transition-colors"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
                   <span className="font-display font-semibold text-offwhite">{candidate.username}</span>
-                  <span className="font-mono text-xs text-marigold bg-marigold/10 px-2 py-0.5 rounded">
-                    match score {score}
-                  </span>
+                  <p className="text-sm text-muted mb-3">{candidate.neighborhood}</p>
+                  <BlockStack tags={candidate.tags} />
                 </div>
-                <p className="text-sm text-muted mb-3">{candidate.neighborhood}</p>
-                <BlockStack tags={candidate.tags} highlightedLabels={reasons.map((r) => r.label)} />
-                <p className="text-xs font-mono text-muted mt-3">
-                  Matched on: {reasons.map((r) => r.label).join(', ')}
-                </p>
+                <button
+                  onClick={() => onConnect(candidate)}
+                  className="shrink-0 px-4 py-2 rounded-lg bg-marigold text-ink text-sm font-semibold hover:brightness-105"
+                >
+                  Connect
+                </button>
               </div>
-              <button
-                onClick={() => onConnect(candidate)}
-                className="shrink-0 px-4 py-2 rounded-lg bg-marigold text-ink text-sm font-semibold hover:brightness-105"
-              >
-                Connect
-              </button>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-3">
+          {matches.map(({ candidate, score, reasons }) => (
+            <div
+              key={candidate.id}
+              className="bg-surface border border-surface2 rounded-xl p-5 hover:border-marigold/50 transition-colors"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="font-display font-semibold text-offwhite">{candidate.username}</span>
+                    <span className="font-mono text-xs text-marigold bg-marigold/10 px-2 py-0.5 rounded">
+                      match score {score}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted mb-3">{candidate.neighborhood}</p>
+                  <BlockStack tags={candidate.tags} highlightedLabels={reasons.map((r) => r.label)} />
+                  <p className="text-xs font-mono text-muted mt-3">
+                    Matched on: {reasons.map((r) => r.label).join(', ')}
+                  </p>
+                </div>
+                <button
+                  onClick={() => onConnect(candidate)}
+                  className="shrink-0 px-4 py-2 rounded-lg bg-marigold text-ink text-sm font-semibold hover:brightness-105"
+                >
+                  Connect
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

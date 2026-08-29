@@ -132,7 +132,7 @@ export default function ConnectModal({ myProfile, candidate, initialConnection, 
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
                   placeholder={candidate.username}
-                  className="flex-1 bg-ink border border-surface2 rounded-lg px-3 py-2 text-sm text-offwhite placeholder:text-muted focus:border-marigold outline-none"
+                  className="flex-1 bg-canvas border border-surface2 rounded-lg px-3 py-2 text-sm text-offwhite placeholder:text-muted focus:border-marigold outline-none"
                 />
                 <button
                   onClick={handleSaveNickname}
@@ -143,7 +143,7 @@ export default function ConnectModal({ myProfile, candidate, initialConnection, 
               </div>
             </div>
 
-            <div className="bg-ink rounded-lg p-3 h-40 overflow-y-auto space-y-2">
+            <div className="bg-canvas rounded-lg p-3 h-40 overflow-y-auto space-y-2">
               {messages.length === 0 && (
                 <p className="text-muted text-sm italic">Say hi — connection accepted!</p>
               )}
@@ -168,7 +168,7 @@ export default function ConnectModal({ myProfile, candidate, initialConnection, 
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="Type a message..."
-                className="flex-1 bg-ink border border-surface2 rounded-lg px-3 py-2 text-sm text-offwhite placeholder:text-muted focus:border-marigold outline-none"
+                className="flex-1 bg-canvas border border-surface2 rounded-lg px-3 py-2 text-sm text-offwhite placeholder:text-muted focus:border-marigold outline-none"
               />
               <button type="submit" className="px-3 py-2 rounded-lg bg-marigold text-ink text-sm font-semibold">
                 Send
@@ -184,7 +184,7 @@ export default function ConnectModal({ myProfile, candidate, initialConnection, 
                 Suggest a meetup →
               </button>
             ) : (
-              <form onSubmit={sendMeetupSuggestion} className="space-y-2 bg-ink rounded-lg p-3">
+              <form onSubmit={sendMeetupSuggestion} className="space-y-2 bg-canvas rounded-lg p-3">
                 <input
                   value={meetup.place}
                   onChange={(e) => setMeetup({ ...meetup, place: e.target.value })}

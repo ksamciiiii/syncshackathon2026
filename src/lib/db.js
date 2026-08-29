@@ -148,6 +148,26 @@ export async function saveNickname(connectionId, nickname) {
   if (error) throw error
 }
 
+// List-level subscription for a "people I've contacted" view — fires on any
+// change to a connection the user is a participant in (new request in
+// either direction, accept/decline, nickname edit).
+export function subscribeToMyConnections(myProfileId, onChange) {
+  const channel = supabase
+    .channel(`my-connections:${myProfileId}:${crypto.randomUUID()}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'connections', filter: `recipient_id=eq.${myProfileId}` },
+      onChange
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'connections', filter: `requester_id=eq.${myProfileId}` },
+      onChange
+    )
+    .subscribe()
+  return () => supabase.removeChannel(channel)
+}
+
 export async function fetchMessages(connectionId) {
   const { data, error } = await supabase
     .from('messages')

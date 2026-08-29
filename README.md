@@ -1,4 +1,4 @@
-# Blocks
+# Tapestry
 
 Connect, chat, and meet up with people who share your interests, culture, and
 language — and trade informal teaching/learning with each other. Anonymous

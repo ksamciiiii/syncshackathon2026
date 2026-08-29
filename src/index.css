@@ -2,14 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Stored as "R G B" triplets (not hex) so Tailwind's rgb(var(...) / <alpha-value>)
+   pattern in tailwind.config.js can still generate opacity modifiers like
+   bg-surface2/70 — a bare hex var() can't be given an alpha channel. */
+:root {
+  --color-canvas: 20 22 43; /* #14162B */
+  --color-surface: 30 33 64; /* #1E2140 */
+  --color-surface2: 38 42 82; /* #262A52 */
+  --color-offwhite: 245 243 238; /* #F5F3EE */
+  --color-muted: 156 159 194; /* #9C9FC2 */
+  --color-scrollbar-thumb: 58 63 116; /* #3a3f74 */
+}
+
+[data-theme='light'] {
+  --color-canvas: 239 236 228; /* #EFECE4 */
+  --color-surface: 255 255 255; /* #FFFFFF */
+  --color-surface2: 231 227 217; /* #E7E3D9 */
+  --color-offwhite: 28 30 51; /* #1C1E33 */
+  --color-muted: 107 110 144; /* #6B6E90 */
+  --color-scrollbar-thumb: 201 196 182; /* #C9C4B6 */
+}
+
 * {
   scrollbar-width: thin;
-  scrollbar-color: #3a3f74 transparent;
+  scrollbar-color: rgb(var(--color-scrollbar-thumb)) transparent;
 }
 
 body {
   font-family: 'Inter', sans-serif;
-  color: #F5F3EE;
+  color: rgb(var(--color-offwhite));
+  background-color: rgb(var(--color-canvas));
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {

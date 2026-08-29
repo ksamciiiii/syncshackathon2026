@@ -1,19 +1,34 @@
-import { useState } from 'react'
-import { USERS, NEED_POSTS } from '../data/mockData'
+import { useEffect, useState } from 'react'
+import { fetchOtherProfiles, fetchNeedPosts, postNeed as postNeedToDb } from '../lib/db'
 import { formatSkills } from '../lib/skills'
 
 export default function TeachLearnBoard({ currentUser, onConnect }) {
   const [needText, setNeedText] = useState('')
-  const [posts, setPosts] = useState(NEED_POSTS)
+  const [posts, setPosts] = useState([])
+  const [profiles, setProfiles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  function postNeed(e) {
+  useEffect(() => {
+    Promise.all([fetchOtherProfiles(currentUser.id), fetchNeedPosts()])
+      .then(([otherProfiles, needPosts]) => {
+        setProfiles(otherProfiles)
+        setPosts(needPosts)
+      })
+      .catch((err) => setError(err.message ?? 'Failed to load the board.'))
+      .finally(() => setLoading(false))
+  }, [currentUser.id])
+
+  async function handlePostNeed(e) {
     e.preventDefault()
     if (!needText.trim()) return
-    setPosts([
-      { id: `n-${Date.now()}`, author: currentUser.username, need: needText.trim(), tags: [] },
-      ...posts,
-    ])
-    setNeedText('')
+    try {
+      const post = await postNeedToDb(currentUser.id, needText.trim())
+      setPosts([post, ...posts])
+      setNeedText('')
+    } catch (err) {
+      setError(err.message ?? 'Failed to post.')
+    }
   }
 
   return (
@@ -25,25 +40,29 @@ export default function TeachLearnBoard({ currentUser, onConnect }) {
         </p>
       </div>
 
+      {error && <p className="text-coral text-sm">{error}</p>}
+      {loading && <p className="text-muted italic py-8 text-center">Loading...</p>}
+
       <div className="grid gap-3">
-        {USERS.map((u) => {
+        {profiles.map((u) => {
           const { offering, seeking } = formatSkills(u.skills)
+          if (!offering && !seeking) return null
           return (
-          <div key={u.id} className="bg-surface border border-surface2 rounded-xl p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <span className="font-display font-semibold text-offwhite">{u.username}</span>
-                {offering && <p className="text-sm text-marigold mt-1">{offering}</p>}
-                {seeking && <p className="text-sm text-coral mt-1">{seeking}</p>}
+            <div key={u.id} className="bg-surface border border-surface2 rounded-xl p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <span className="font-display font-semibold text-offwhite">{u.username}</span>
+                  {offering && <p className="text-sm text-marigold mt-1">{offering}</p>}
+                  {seeking && <p className="text-sm text-coral mt-1">{seeking}</p>}
+                </div>
+                <button
+                  onClick={() => onConnect(u)}
+                  className="shrink-0 px-4 py-2 rounded-lg bg-surface2 text-offwhite text-sm font-semibold hover:bg-surface2/70"
+                >
+                  Reach out
+                </button>
               </div>
-              <button
-                onClick={() => onConnect(u)}
-                className="shrink-0 px-4 py-2 rounded-lg bg-surface2 text-offwhite text-sm font-semibold hover:bg-surface2/70"
-              >
-                Reach out
-              </button>
             </div>
-          </div>
           )
         })}
       </div>
@@ -54,7 +73,7 @@ export default function TeachLearnBoard({ currentUser, onConnect }) {
           Say what you actually miss or want — matched to someone with that specific experience,
           not a generic interest.
         </p>
-        <form onSubmit={postNeed} className="flex gap-2 mb-6">
+        <form onSubmit={handlePostNeed} className="flex gap-2 mb-6">
           <input
             value={needText}
             onChange={(e) => setNeedText(e.target.value)}
@@ -72,8 +91,8 @@ export default function TeachLearnBoard({ currentUser, onConnect }) {
         <div className="grid gap-3">
           {posts.map((p) => (
             <div key={p.id} className="bg-surface border border-coral/20 rounded-xl p-5">
-              <p className="text-offwhite">{p.need}</p>
-              <p className="font-mono text-xs text-muted mt-3">— {p.author}</p>
+              <p className="text-offwhite">{p.need_text}</p>
+              <p className="font-mono text-xs text-muted mt-3">— {p.profiles?.username ?? 'unknown'}</p>
             </div>
           ))}
         </div>

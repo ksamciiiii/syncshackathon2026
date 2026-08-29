@@ -22,6 +22,9 @@ export default function ProfileSetup({ onComplete, onCancel, initialData = null,
   const [skillDirection, setSkillDirection] = useState('teach')
   const [skillLevel, setSkillLevel] = useState('beginner')
 
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState(null)
+
   function addTag() {
     const label = tagInput.trim()
     if (!label) return
@@ -58,16 +61,24 @@ export default function ProfileSetup({ onComplete, onCancel, initialData = null,
     setSkills(skills.filter((_, i) => i !== index))
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     if (!username.trim() || tags.length === 0) return
-    onComplete({
-      ...initialData,
-      username: username.trim(),
-      neighborhood: neighborhood.trim(),
-      tags,
-      skills,
-    })
+    setSubmitting(true)
+    setSubmitError(null)
+    try {
+      await onComplete({
+        ...initialData,
+        username: username.trim(),
+        neighborhood: neighborhood.trim(),
+        tags,
+        skills,
+      })
+    } catch (err) {
+      setSubmitError(err.message ?? 'Something went wrong — try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const teachSkills = skills.filter((s) => s.direction === 'teach')
@@ -269,22 +280,25 @@ export default function ProfileSetup({ onComplete, onCancel, initialData = null,
           )}
         </div>
 
+        {submitError && <p className="text-coral text-sm">{submitError}</p>}
+
         <div className="flex gap-3">
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 py-3 rounded-lg bg-surface2 text-offwhite font-display font-semibold hover:bg-surface2/70 transition"
+              disabled={submitting}
+              className="flex-1 py-3 rounded-lg bg-surface2 text-offwhite font-display font-semibold hover:bg-surface2/70 transition disabled:opacity-40"
             >
               Cancel
             </button>
           )}
           <button
             type="submit"
-            disabled={!username.trim() || tags.length === 0}
+            disabled={!username.trim() || tags.length === 0 || submitting}
             className="flex-1 py-3 rounded-lg bg-marigold text-ink font-display font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105 transition"
           >
-            {mode === 'edit' ? 'Save changes' : 'Enter Blocks'}
+            {submitting ? 'Saving...' : mode === 'edit' ? 'Save changes' : 'Enter Blocks'}
           </button>
         </div>
       </form>

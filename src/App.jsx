@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ProfileSetup from './components/ProfileSetup'
 import ProfileView from './components/ProfileView'
 import MatchFeed from './components/MatchFeed'
 import TeachLearnBoard from './components/TeachLearnBoard'
 import ConnectModal from './components/ConnectModal'
 import BlockStack from './components/BlockStack'
+import { fetchMyProfile, createProfile, updateProfile, sendConnectionRequest } from './lib/db'
 
 const TABS = [
   { key: 'matches', label: 'Matches' },
@@ -14,12 +15,32 @@ const TABS = [
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('matches')
-  const [connectingWith, setConnectingWith] = useState(null)
-  const [nicknames, setNicknames] = useState({})
+  const [connecting, setConnecting] = useState(null) // { candidate, connection }
+
+  useEffect(() => {
+    fetchMyProfile()
+      .then(setCurrentUser)
+      .finally(() => setLoading(false))
+  }, [])
+
+  async function handleProfileComplete(data) {
+    const profile = currentUser ? await updateProfile(currentUser.id, data) : await createProfile(data)
+    setCurrentUser(profile)
+  }
+
+  async function handleConnect(candidate) {
+    const connection = await sendConnectionRequest(currentUser.id, candidate.id)
+    setConnecting({ candidate, connection })
+  }
+
+  if (loading) {
+    return <p className="text-muted text-center py-14">Loading...</p>
+  }
 
   if (!currentUser) {
-    return <ProfileSetup onComplete={setCurrentUser} />
+    return <ProfileSetup onComplete={handleProfileComplete} />
   }
 
   return (
@@ -50,23 +71,24 @@ export default function App() {
         {tab === 'matches' && (
           <MatchFeed
             currentUser={currentUser}
-            onConnect={setConnectingWith}
+            onConnect={handleConnect}
             onEditProfile={() => setTab('profile')}
           />
         )}
         {tab === 'teach-learn' && (
-          <TeachLearnBoard currentUser={currentUser} onConnect={setConnectingWith} />
+          <TeachLearnBoard currentUser={currentUser} onConnect={handleConnect} />
         )}
         {tab === 'profile' && (
-          <ProfileView currentUser={currentUser} onUpdate={setCurrentUser} />
+          <ProfileView currentUser={currentUser} onUpdate={handleProfileComplete} />
         )}
       </main>
 
-      {connectingWith && (
+      {connecting && (
         <ConnectModal
-          user={{ ...connectingWith, username: nicknames[connectingWith.id] || connectingWith.username }}
-          onClose={() => setConnectingWith(null)}
-          onSaveNickname={(id, nick) => setNicknames({ ...nicknames, [id]: nick })}
+          myProfile={currentUser}
+          candidate={connecting.candidate}
+          initialConnection={connecting.connection}
+          onClose={() => setConnecting(null)}
         />
       )}
     </div>

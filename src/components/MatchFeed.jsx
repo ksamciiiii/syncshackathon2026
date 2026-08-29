@@ -1,9 +1,21 @@
-import { USERS } from '../data/mockData'
+import { useEffect, useState } from 'react'
+import { fetchOtherProfiles } from '../lib/db'
 import { rankMatches } from '../lib/matching'
 import BlockStack from './BlockStack'
 
 export default function MatchFeed({ currentUser, onConnect, onEditProfile }) {
-  const matches = rankMatches(currentUser, USERS)
+  const [profiles, setProfiles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    fetchOtherProfiles(currentUser.id)
+      .then(setProfiles)
+      .catch((err) => setError(err.message ?? 'Failed to load matches.'))
+      .finally(() => setLoading(false))
+  }, [currentUser.id])
+
+  const matches = rankMatches(currentUser, profiles)
 
   return (
     <div className="space-y-4">
@@ -14,7 +26,10 @@ export default function MatchFeed({ currentUser, onConnect, onEditProfile }) {
         </p>
       </div>
 
-      {matches.length === 0 && (
+      {error && <p className="text-coral text-sm">{error}</p>}
+      {loading && <p className="text-muted italic py-8 text-center">Loading matches...</p>}
+
+      {!loading && matches.length === 0 && (
         <div className="text-center py-8">
           <p className="text-muted italic mb-4">
             No matches yet — add more tags to your profile to find people.

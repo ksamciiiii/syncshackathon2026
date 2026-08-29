@@ -12,8 +12,8 @@ export default function ProfileView({ currentUser, onUpdate }) {
         mode="edit"
         initialData={currentUser}
         onCancel={() => setEditing(false)}
-        onComplete={(updated) => {
-          onUpdate(updated)
+        onComplete={async (updated) => {
+          await onUpdate(updated)
           setEditing(false)
         }}
       />

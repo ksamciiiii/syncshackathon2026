@@ -1,43 +1,82 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import {
+  respondToConnection,
+  saveNickname,
+  fetchMessages,
+  sendMessage as sendMessageToDb,
+  subscribeToMessages,
+  subscribeToConnection,
+} from '../lib/db'
 
-export default function ConnectModal({ user, onClose, onSaveNickname }) {
-  const [stage, setStage] = useState('request') // 'request' | 'sent' | 'chat'
-  const [nickname, setNickname] = useState('')
+export default function ConnectModal({ myProfile, candidate, initialConnection, onClose }) {
+  const [connection, setConnection] = useState(initialConnection)
+  const [nickname, setNickname] = useState(initialConnection.nickname ?? '')
   const [messages, setMessages] = useState([])
   const [draft, setDraft] = useState('')
   const [showMeetupForm, setShowMeetupForm] = useState(false)
   const [meetup, setMeetup] = useState({ place: '', date: '', time: '' })
+  const [error, setError] = useState(null)
 
-  function sendRequest() {
-    setStage('sent')
-    setTimeout(() => setStage('chat'), 900) // simulated acceptance for demo
+  const isRecipient = connection.recipient_id === myProfile.id
+
+  useEffect(() => {
+    const unsubscribe = subscribeToConnection(connection.id, setConnection)
+    return unsubscribe
+  }, [connection.id])
+
+  useEffect(() => {
+    if (connection.status !== 'accepted') return
+    fetchMessages(connection.id).then(setMessages).catch((err) => setError(err.message))
+    const unsubscribe = subscribeToMessages(connection.id, (m) => setMessages((prev) => [...prev, m]))
+    return unsubscribe
+  }, [connection.id, connection.status])
+
+  async function respond(status) {
+    try {
+      const updated = await respondToConnection(connection.id, status)
+      setConnection(updated)
+    } catch (err) {
+      setError(err.message ?? 'Failed to respond.')
+    }
   }
 
-  function sendMessage(e) {
+  async function handleSaveNickname() {
+    if (!nickname.trim()) return
+    try {
+      await saveNickname(connection.id, nickname.trim())
+    } catch (err) {
+      setError(err.message ?? 'Failed to save nickname.')
+    }
+  }
+
+  async function sendMessage(e) {
     e.preventDefault()
     if (!draft.trim()) return
-    setMessages([...messages, { from: 'me', text: draft.trim() }])
-    setDraft('')
+    try {
+      await sendMessageToDb(connection.id, myProfile.id, draft.trim())
+      setDraft('')
+    } catch (err) {
+      setError(err.message ?? 'Failed to send message.')
+    }
   }
 
-  function saveNickname() {
-    if (nickname.trim()) onSaveNickname(user.id, nickname.trim())
-  }
-
-  function sendMeetupSuggestion(e) {
+  async function sendMeetupSuggestion(e) {
     e.preventDefault()
     if (!meetup.place.trim() || !meetup.date || !meetup.time) return
-    setMessages([
-      ...messages,
-      {
-        from: 'me',
-        text: `📍 Suggested meetup: ${meetup.place.trim()} on ${meetup.date} at ${meetup.time}`,
-        isMeetup: true,
-      },
-    ])
-    setMeetup({ place: '', date: '', time: '' })
-    setShowMeetupForm(false)
+    try {
+      await sendMessageToDb(
+        connection.id,
+        myProfile.id,
+        `📍 Suggested meetup: ${meetup.place.trim()} on ${meetup.date} at ${meetup.time}`
+      )
+      setMeetup({ place: '', date: '', time: '' })
+      setShowMeetupForm(false)
+    } catch (err) {
+      setError(err.message ?? 'Failed to send meetup suggestion.')
+    }
   }
+
+  const displayName = nickname.trim() || candidate.username
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50" onClick={onClose}>
@@ -46,29 +85,45 @@ export default function ConnectModal({ user, onClose, onSaveNickname }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-xl font-semibold text-offwhite">{user.username}</h3>
+          <h3 className="font-display text-xl font-semibold text-offwhite">{displayName}</h3>
           <button onClick={onClose} className="text-muted hover:text-offwhite">✕</button>
         </div>
 
-        {stage === 'request' && (
+        {error && <p className="text-coral text-sm mb-3">{error}</p>}
+
+        {connection.status === 'pending' && !isRecipient && (
+          <p className="text-muted text-sm py-6 text-center animate-pulse">
+            Request sent — waiting for {candidate.username} to accept...
+          </p>
+        )}
+
+        {connection.status === 'pending' && isRecipient && (
           <div className="space-y-4">
             <p className="text-muted text-sm">
-              Send a connection request. Your real identity stays anonymous until you both agree to share more.
+              {candidate.username} wants to connect. Your real identity stays anonymous until you both agree to share more.
             </p>
-            <button
-              onClick={sendRequest}
-              className="w-full py-2.5 rounded-lg bg-marigold text-ink font-semibold hover:brightness-105"
-            >
-              Send request
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => respond('accepted')}
+                className="flex-1 py-2.5 rounded-lg bg-marigold text-ink font-semibold hover:brightness-105"
+              >
+                Accept
+              </button>
+              <button
+                onClick={() => respond('declined')}
+                className="flex-1 py-2.5 rounded-lg bg-surface2 text-offwhite font-semibold hover:bg-surface2/70"
+              >
+                Decline
+              </button>
+            </div>
           </div>
         )}
 
-        {stage === 'sent' && (
-          <p className="text-muted text-sm py-6 text-center animate-pulse">Request sent...</p>
+        {connection.status === 'declined' && (
+          <p className="text-muted text-sm py-6 text-center">This request was declined.</p>
         )}
 
-        {stage === 'chat' && (
+        {connection.status === 'accepted' && (
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-mono text-muted mb-1.5">Give them a nickname (private, only you see it)</label>
@@ -76,11 +131,11 @@ export default function ConnectModal({ user, onClose, onSaveNickname }) {
                 <input
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  placeholder={user.username}
+                  placeholder={candidate.username}
                   className="flex-1 bg-ink border border-surface2 rounded-lg px-3 py-2 text-sm text-offwhite placeholder:text-muted focus:border-marigold outline-none"
                 />
                 <button
-                  onClick={saveNickname}
+                  onClick={handleSaveNickname}
                   className="px-3 py-2 rounded-lg bg-surface2 text-offwhite text-sm hover:bg-surface2/70"
                 >
                   Save
@@ -92,16 +147,20 @@ export default function ConnectModal({ user, onClose, onSaveNickname }) {
               {messages.length === 0 && (
                 <p className="text-muted text-sm italic">Say hi — connection accepted!</p>
               )}
-              {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={`text-sm rounded-lg px-3 py-1.5 w-fit ml-auto ${
-                    m.isMeetup ? 'bg-coral/20 text-coral font-medium' : 'bg-marigold/10 text-offwhite'
-                  }`}
-                >
-                  {m.text}
-                </div>
-              ))}
+              {messages.map((m) => {
+                const isMe = m.sender_id === myProfile.id
+                const isMeetup = m.body.startsWith('📍')
+                return (
+                  <div
+                    key={m.id}
+                    className={`text-sm rounded-lg px-3 py-1.5 w-fit ${isMe ? 'ml-auto' : ''} ${
+                      isMeetup ? 'bg-coral/20 text-coral font-medium' : 'bg-marigold/10 text-offwhite'
+                    }`}
+                  >
+                    {m.body}
+                  </div>
+                )
+              })}
             </div>
 
             <form onSubmit={sendMessage} className="flex gap-2">

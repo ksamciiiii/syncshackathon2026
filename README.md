@@ -1,4 +1,10 @@
 # Tapestry
+_Weaving interests together._
+
+Creating meaningful relationships is more challenging than ever in our society 
+which prioritises technology over people, instead of using technology as a tool 
+for people. Connections between individuals often require a mutual “block”: a 
+hobby, culture, language that facilitates the union.
 
 Connect, chat, and meet up with people who share your interests, culture, and
 language — and trade informal teaching/learning with each other. Anonymous
